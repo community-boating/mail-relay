@@ -5,6 +5,7 @@ var relay = function(req, res, next) {
 	req.jsonBody = JSON.parse(req.utf8Body)
 
 	req.sgString =	'to=' + encodeURIComponent(req.jsonBody.to) + '&' +
+					((!!req.jsonBody.bcc) ? 'bcc=' + encodeURIComponent(req.jsonBody.bcc) + '&' : '') +
 					'from=' + encodeURIComponent(req.jsonBody.from) + '&' +
 					'subject=' + encodeURIComponent(req.jsonBody.subject) + '&' +
 					'text=' + encodeURIComponent(req.jsonBody.text) + '&' +
