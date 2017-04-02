@@ -1,8 +1,14 @@
 var https = require('https');
+var os = require("os");
+
+var saveToDB = require("../db");
 
 var relay = function(req, res, next) {
 	req.utf8Body = (new Buffer(req.body,'hex')).toString('utf-8');
 	req.jsonBody = JSON.parse(req.utf8Body)
+
+	// inject the hostname of this server into the email headers
+	req.jsonBody.headers = req.jsonBody.headers.replace(/}/,", \"X-CBI-Relay\" : \"" + os.hostname() + "\"}")
 
 	req.sgString =	'to=' + encodeURIComponent(req.jsonBody.to) + '&' +
 					((!!req.jsonBody.bcc) ? ('bcc=' + encodeURIComponent(req.jsonBody.bcc) + '&') : '') +
@@ -25,23 +31,34 @@ var relay = function(req, res, next) {
 		}
 	};
 
-	var sgReq = https.request(options, function(sgRes) {
-		console.log('statusCode: ', sgRes.statusCode);
-		console.log('headers: ', sgRes.headers);
+	console.log("About to send the following email to sendgrid: " + req.jsonBody.headers)
 
-		sgRes.on('data', function(d) {
-			console.log("! " + d)
+	new Promise(function(resolve, reject) {
+		var sgReq = https.request(options, function(sgRes) {
+			console.log('sendgrid statusCode: ', sgRes.statusCode);
+			console.log('sendgrid headers: ', sgRes.headers);
+
+			sgRes.on('data', function(d) {
+				console.log("Response from sendgrid: " + d)
+			})
+
+			// Tell APEX we successfully sent the email to sendgrid
+			res.send('S')
+			resolve();
+		});
+
+		sgReq.on('error', function(e) {
+			console.log(e);
+			reject(e);
 		})
 
-		res.send('S')
+		sgReq.write(req.sgString);
+		sgReq.end();
+	}).then(function() {
+		return saveToDB(req.jsonBody);
+	}).catch(function(err) {
+		console.log("Promise caught an error: " + err)
 	});
-
-	sgReq.on('error', function(e) {
-		console.log(e);
-	});
-
-	sgReq.write(req.sgString);
-	sgReq.end();
 };
 
 module.exports = relay;

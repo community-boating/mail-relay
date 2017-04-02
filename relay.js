@@ -11,7 +11,6 @@ var config = ini.parse(fs.readFileSync('./private.ini', 'utf-8'))
 
 // validate legit request
 app.use(function(req, res, next) {
-	console.log("received req")
 	if (req.method != 'POST' || req.path != '/relay') res.end();					// only accept POSTs going to /relay
 	else if (!req.headers['cbi-auth']) res.end();									// cbi-auth header exists?
 	else if (req.headers['cbi-auth'] != config.general.cbiAuthToken) res.end();		// cbi-auth header is correct?
@@ -25,5 +24,5 @@ app.use(bodyParser.text());
 app.post('/relay', sendgrid);
 
 app.listen(8080, function() {
-	console.log('Example app listening on port 8080!');
+	console.log('Mail relay listening on port 8080');
 });
