@@ -1,0 +1,13 @@
+[general]
+cbiAuthToken = $CBI_AUTH_TOKEN$
+
+[sendgrid]
+host = api.sendgrid.com
+path = /api/mail.send.json
+authToken = $SENDGRID_TOKEN$
+
+[mysql]
+host = $DB_HOST$
+database = $DB_SCHEMA$
+user = $DB_USER$
+password = $DB_PASSWORD$

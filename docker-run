@@ -1,0 +1,9 @@
+docker run -d \
+--name mail-relay \
+-e CBI_AUTH_TOKEN=aaa \
+-e SENDGRID_TOKEN=bbb \
+-e DB_HOST=ccc \
+-e DB_SCHEMA=ddd \
+-e DB_USER=eee \
+-e DB_PASSWORD=fff \
+sailcbi/mail-relay

@@ -4,7 +4,7 @@ var bodyParser = require('body-parser')
 var fs = require('fs')
 var ini = require('ini')
 
-var sendgrid = require('./relays/sendgrid')
+var sendgrid = require('./sendgrid')
 
 var app = express();
 var config = ini.parse(fs.readFileSync('./private.ini', 'utf-8'))

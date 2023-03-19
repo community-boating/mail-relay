@@ -1,7 +1,7 @@
 var https = require('https');
 var os = require("os");
 
-var saveToDB = require("../db");
+var saveToDB = require("./db");
 
 var relay = function(req, res, next) {
 	req.utf8Body = (new Buffer(req.body,'hex')).toString('utf-8');
@@ -9,6 +9,20 @@ var relay = function(req, res, next) {
 
 	// inject the hostname of this server into the email headers
 	req.jsonBody.headers = req.jsonBody.headers.replace(/}/,", \"X-CBI-Relay\" : \"" + os.hostname() + "\"}")
+
+	var trackingId = null
+	var instance = null
+
+	try {
+		const headersParsed = JSON.parse(req.jsonBody.headers)
+		instance = headersParsed["X-CBI-Instance"]
+		trackingId = headersParsed["X-CBI-Tracking-Id"]
+		instance = headersParsed["X-CBI-Instance"]
+		console.log("Found instance: ", instance)
+		console.log("Found trackingId: ", trackingId)
+	} catch (e) {
+		console.log("Error trying to parse for trackingId")
+	}
 
 	req.sgString =	'to=' + encodeURIComponent(req.jsonBody.to) + '&' +
 					((!!req.jsonBody.bcc) ? ('bcc=' + encodeURIComponent(req.jsonBody.bcc) + '&') : '') +
@@ -55,7 +69,7 @@ var relay = function(req, res, next) {
 		sgReq.write(req.sgString);
 		sgReq.end();
 	}).then(function() {
-		return saveToDB(req.jsonBody);
+		return saveToDB(req.jsonBody, instance, trackingId);
 	}).catch(function(err) {
 		console.log("Promise caught an error: " + err)
 	});
